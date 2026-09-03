@@ -9,7 +9,10 @@ const fileName = document.getElementById('fileName');
 const fileSize = document.getElementById('fileSize');
 const previewImg = document.getElementById('previewImg');
 const previewPlaceholder = document.getElementById('previewPlaceholder');
-const btnInject = document.getElementById('btnInject');
+const btnConvert = document.getElementById('btnConvert');
+const resultActions = document.getElementById('resultActions');
+const btnShareStory = document.getElementById('btnShareStory');
+const btnDownload = document.getElementById('btnDownload');
 const inputDateTime = document.getElementById('inputDateTime');
 const btnNow = document.getElementById('btnNow');
 const customModelBox = document.getElementById('customModelBox');
@@ -63,6 +66,8 @@ if (btnShortcutModal && shortcutModal && btnCloseModal) {
 
 let currentFile = null;
 let currentArrayBuffer = null;
+let convertedBlob = null;
+let convertedFileName = '';
 
 // Initialize default date & time (now)
 function setDateTimeNow() {
@@ -207,7 +212,11 @@ async function handleFile(file) {
     }
   }
 
-  btnInject.disabled = false;
+  // Reset result state
+  convertedBlob = null;
+  resultActions.classList.add('hidden');
+  resultActions.classList.remove('grid');
+  btnConvert.disabled = false;
 }
 
 function convertPngToJpegBuffer(file) {
@@ -343,13 +352,13 @@ function injectExifSegment(jpegBuffer, exifSegmentBytes) {
   return result;
 }
 
-// Handle Inject & Download
-btnInject.addEventListener('click', async () => {
+// Handle Convert EXIF
+btnConvert.addEventListener('click', async () => {
   if (!currentArrayBuffer) return;
 
   try {
-    btnInject.disabled = true;
-    btnInject.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Memproses Injeksi EXIF...';
+    btnConvert.disabled = true;
+    btnConvert.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Memproses EXIF Inject...';
 
     // Clone base Exif bytes
     const exifBytes = base64ToUint8Array(META_GLASS_APP1_BASE64);
@@ -373,34 +382,70 @@ btnInject.addEventListener('click', async () => {
     // Injeksi segmen ke dalam file target
     const finalJpegBytes = injectExifSegment(currentArrayBuffer, exifBytes);
 
-    // Buat Blob & Download
-    const blob = new Blob([finalJpegBytes], { type: 'image/jpeg' });
-    const downloadUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    // Siapkan Blob hasil
+    convertedBlob = new Blob([finalJpegBytes], { type: 'image/jpeg' });
     
-    // Nama file unduhan persis mengikuti nama file yang diupload (dengan ekstensi .jpg jika dikonversi)
+    // Tentukan nama file
     let downloadFileName = currentFile.name;
     if (!downloadFileName.toLowerCase().match(/\.jpe?g$/i)) {
       downloadFileName = downloadFileName.replace(/\.[^/.]+$/, '') + '.jpg';
     }
-    link.download = downloadFileName;
-    link.href = downloadUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(downloadUrl);
+    convertedFileName = downloadFileName;
 
-    statusNotice.innerHTML = `<span class="text-emerald-400 font-semibold">✔ Berhasil! Foto dengan metadata Meta Glass telah didownload (${link.download}).</span>`;
+    // Tampilkan tombol aksi (Share to Story & Download)
+    resultActions.classList.remove('hidden');
+    resultActions.classList.add('grid');
+
+    statusNotice.innerHTML = '<span class="text-emerald-400 font-semibold">✔ Foto berhasil dikonversi! Pilih <strong>Share to Story</strong> atau <strong>Download</strong>.</span>';
 
   } catch (err) {
     console.error(err);
     alert('Gagal menginjeksi EXIF: ' + err.message);
   } finally {
-    btnInject.disabled = false;
-    btnInject.innerHTML = `
+    btnConvert.disabled = false;
+    btnConvert.innerHTML = `
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
-      <span>Inject EXIF & Unduh Foto</span>`;
+      <span>Convert / Inject EXIF Ulang</span>`;
+  }
+});
+
+// Handle Download Button
+btnDownload.addEventListener('click', () => {
+  if (!convertedBlob) return;
+  const downloadUrl = URL.createObjectURL(convertedBlob);
+  const link = document.createElement('a');
+  link.download = convertedFileName || 'meta_glasses.jpg';
+  link.href = downloadUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
+});
+
+// Handle Share to Story (Web Share API for Instagram/WhatsApp/Facebook Story)
+btnShareStory.addEventListener('click', async () => {
+  if (!convertedBlob) return;
+
+  const fileToShare = new File([convertedBlob], convertedFileName || 'photo.jpg', { type: 'image/jpeg' });
+
+  if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+    try {
+      await navigator.share({
+        files: [fileToShare],
+        title: 'Meta Glasses Photo',
+        text: 'Taken with Ray-Ban Meta Smart Glasses'
+      });
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error(err);
+        alert('Gagal membagikan foto: ' + err.message);
+      }
+    }
+  } else {
+    // Fallback jika Web Share API tidak didukung di desktop / browser tertentu
+    alert('Web Share API tidak didukung di browser ini. Foto akan otomatis diunduh agar dapat diunggah manual ke Story Instagram / WhatsApp.');
+    btnDownload.click();
   }
 });
