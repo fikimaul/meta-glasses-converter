@@ -24,16 +24,29 @@ const statusNotice = document.getElementById('statusNotice');
 const btnShortcutModal = document.getElementById('btnShortcutModal');
 const shortcutModal = document.getElementById('shortcutModal');
 const btnCloseModal = document.getElementById('btnCloseModal');
-const currentWebUrl = document.getElementById('currentWebUrl');
+const copyUrlInput = document.getElementById('copyUrlInput');
+const btnCopyUrl = document.getElementById('btnCopyUrl');
 
 if (btnShortcutModal && shortcutModal && btnCloseModal) {
   btnShortcutModal.addEventListener('click', () => {
     shortcutModal.classList.remove('hidden');
     shortcutModal.classList.add('flex');
-    if (currentWebUrl && window.location.href.startsWith('http')) {
-      currentWebUrl.textContent = window.location.href;
+    if (copyUrlInput && window.location.href.startsWith('http')) {
+      copyUrlInput.value = window.location.href;
     }
   });
+
+  if (btnCopyUrl && copyUrlInput) {
+    btnCopyUrl.addEventListener('click', () => {
+      copyUrlInput.select();
+      navigator.clipboard.writeText(copyUrlInput.value).then(() => {
+        btnCopyUrl.textContent = 'Tersalin! ✔';
+        setTimeout(() => {
+          btnCopyUrl.textContent = 'Salin URL';
+        }, 2000);
+      });
+    });
+  }
 
   btnCloseModal.addEventListener('click', () => {
     shortcutModal.classList.add('hidden');
