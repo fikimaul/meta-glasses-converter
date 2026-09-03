@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta Glass EXIF Injector (Client-Side)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-cyan-500 selection:text-black">
+  <div class="relative overflow-hidden">
+    <!-- Background Glow Effects -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-60 -right-40 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <!-- Header -->
+      <header class="text-center mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          100% Client-Side • Tanpa Upload Server
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyan-400 bg-clip-text text-transparent">
+          Meta Glass EXIF Injector
+        </h1>
+        <p class="mt-3 text-slate-400 max-w-2xl mx-auto text-sm sm:text-base">
+          Suntikkan metadata EXIF bawaan <strong class="text-cyan-400">Ray-Ban Meta Smart Glasses</strong> ke foto JPEG apa pun langsung di browser secara instan dan aman.
+        </p>
+      </header>
+
+      <!-- Main Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left: Upload & Actions -->
+        <div class="lg:col-span-7 space-y-6">
+          
+          <!-- Dropzone -->
+          <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-800 hover:border-slate-700 transition rounded-2xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
+              <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              1. Pilih / Drop Foto Target (JPG/JPEG)
+            </h2>
+            
+            <div id="dropzone" class="border-2 border-dashed border-slate-700 hover:border-cyan-500/70 hover:bg-cyan-500/5 transition-all rounded-xl p-8 text-center cursor-pointer flex flex-col items-center justify-center gap-3 group">
+              <div class="w-14 h-14 rounded-full bg-slate-800 group-hover:bg-cyan-500/20 text-slate-400 group-hover:text-cyan-400 flex items-center justify-center transition">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-semibold text-slate-200 group-hover:text-cyan-400 transition">Klik untuk memilih file atau seret foto ke sini</p>
+                <p class="text-xs text-slate-500 mt-1">Mendukung format JPG / JPEG / PNG / HEIC</p>
+              </div>
+              <input id="fileInput" type="file" accept="image/jpeg, image/jpg, image/png, image/heic, image/heif, .heic, .heif" class="hidden" />
+            </div>
+
+            <!-- Selected File Info -->
+            <div id="fileInfo" class="mt-4 hidden p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs flex items-center justify-between">
+              <div class="flex items-center gap-2 truncate">
+                <span class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-mono font-bold">FILE</span>
+                <span id="fileName" class="font-medium text-slate-300 truncate">foto.jpg</span>
+              </div>
+              <span id="fileSize" class="text-slate-400 font-mono ml-2 whitespace-nowrap">0 KB</span>
+            </div>
+          </div>
+
+          <!-- Options & Inject Settings -->
+          <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+              <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              2. Metadata Mode & Timestamp
+            </h2>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pilihan Template Meta Glass</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-cyan-500/40 bg-cyan-500/10 cursor-pointer transition">
+                  <input type="radio" name="metaPreset" value="rayban2" checked class="text-cyan-500 focus:ring-cyan-500" />
+                  <div>
+                    <div class="text-xs font-bold text-slate-200">Ray-Ban Meta Smart Glasses 2</div>
+                    <div class="text-[11px] text-slate-400">Make: Meta AI • Model: Ray-Ban Meta Smart Glasses 2</div>
+                  </div>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-950/40 hover:border-slate-700 cursor-pointer transition">
+                  <input type="radio" name="metaPreset" value="custom" class="text-cyan-500 focus:ring-cyan-500" />
+                  <div>
+                    <div class="text-xs font-bold text-slate-200">Custom Make / Model</div>
+                    <div class="text-[11px] text-slate-400">Sesuaikan nama model Meta Glass</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Custom Model Inputs (Hidden by default) -->
+            <div id="customModelBox" class="hidden grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Make / Produsen</label>
+                <input id="inputMake" type="text" value="Meta AI" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-cyan-500 focus:outline-none" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">Model Kamera</label>
+                <input id="inputModel" type="text" value="Ray-Ban Meta Smart Glasses 2" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-cyan-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Waktu Foto (Exif DateTime)</label>
+                <button id="btnNow" type="button" class="text-[11px] text-cyan-400 hover:underline">Set Sekarang</button>
+              </div>
+              <input id="inputDateTime" type="datetime-local" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:border-cyan-500 focus:outline-none font-mono" />
+            </div>
+
+            <!-- Process Button -->
+            <button id="btnInject" disabled class="w-full mt-4 py-3 px-6 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Inject EXIF & Unduh Foto</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Right: Preview & Details -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Image Preview -->
+          <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Preview Gambar
+            </h3>
+            <div class="w-full aspect-[4/3] rounded-xl bg-slate-950 border border-slate-800/80 overflow-hidden flex items-center justify-center relative group">
+              <img id="previewImg" class="w-full h-full object-contain hidden" alt="Preview Foto" />
+              <div id="previewPlaceholder" class="text-center p-6 text-slate-600">
+                <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-xs">Belum ada gambar yang dipilih</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata Tags Injected List -->
+          <div class="bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                EXIF Metadata Tags
+              </span>
+              <span class="text-[11px] text-cyan-400 font-mono">Ray-Ban Meta Gen 2</span>
+            </h3>
+
+            <div class="space-y-2 text-xs font-mono">
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Make:</span>
+                <span id="tagMake" class="text-cyan-300 font-medium">Meta AI</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Model:</span>
+                <span id="tagModel" class="text-cyan-300 font-medium">Ray-Ban Meta Smart Glasses 2</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Software:</span>
+                <span id="tagSoftware" class="text-slate-300">Meta View App</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">ExifVersion:</span>
+                <span class="text-slate-300">0232 (Exif 2.32)</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">ExposureTime / FNumber:</span>
+                <span class="text-slate-300">1/120s • f/2.2</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">ISO / FocalLength:</span>
+                <span class="text-slate-300">ISO 100 • 2.8mm</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-800">
+                <span class="text-slate-400">ColorSpace:</span>
+                <span class="text-slate-300">sRGB (1)</span>
+              </div>
+              <div class="flex justify-between py-1.5">
+                <span class="text-slate-400">DateTime:</span>
+                <span id="tagDateTime" class="text-emerald-400 font-medium">-</span>
+              </div>
+            </div>
+
+            <!-- Verification / Status Notice -->
+            <div id="statusNotice" class="mt-4 p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 flex items-start gap-2">
+              <svg class="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>File hasil inject dapat dicek melalui Exif Viewer / Windows Properties / Mac Get Info / Metadata App.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Footer Info -->
+      <footer class="mt-12 text-center text-xs text-slate-600">
+        <p>Meta Glass EXIF Injector • Pure Client-Side Binary Patching & JPEG APP1 Segment Injection</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
