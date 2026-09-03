@@ -18,6 +18,13 @@ A lightweight, modern, 100% client-side web application to inject authentic **Ra
 
 ---
 
+## 🌐 Live Demo & Shortcuts
+
+- **Web App:** [https://fiki.my.id/meta-glasses-converter/](https://fiki.my.id/meta-glasses-converter/)
+- **iOS Shortcut:** Tersedia langsung di halaman web via tombol *Apple Shortcut*.
+
+---
+
 ## 🚀 Getting Started
 
 Simply clone the repository and open `index.html` in any modern web browser:
