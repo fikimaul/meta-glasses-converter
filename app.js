@@ -215,7 +215,7 @@ async function handleFile(file) {
   // Reset result state
   convertedBlob = null;
   resultActions.classList.add('hidden');
-  resultActions.classList.remove('grid');
+  resultActions.classList.remove('flex');
   btnConvert.disabled = false;
 }
 
@@ -394,7 +394,7 @@ btnConvert.addEventListener('click', async () => {
 
     // Tampilkan tombol aksi (Share to Story & Download)
     resultActions.classList.remove('hidden');
-    resultActions.classList.add('grid');
+    resultActions.classList.add('flex');
 
     statusNotice.innerHTML = '<span class="text-emerald-400 font-semibold">✔ Foto berhasil dikonversi! Pilih <strong>Share to Story</strong> atau <strong>Download</strong>.</span>';
 
