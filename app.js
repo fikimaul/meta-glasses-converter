@@ -20,6 +20,34 @@ const tagModel = document.getElementById('tagModel');
 const tagDateTime = document.getElementById('tagDateTime');
 const statusNotice = document.getElementById('statusNotice');
 
+// Shortcut Modal Elements
+const btnShortcutModal = document.getElementById('btnShortcutModal');
+const shortcutModal = document.getElementById('shortcutModal');
+const btnCloseModal = document.getElementById('btnCloseModal');
+const currentWebUrl = document.getElementById('currentWebUrl');
+
+if (btnShortcutModal && shortcutModal && btnCloseModal) {
+  btnShortcutModal.addEventListener('click', () => {
+    shortcutModal.classList.remove('hidden');
+    shortcutModal.classList.add('flex');
+    if (currentWebUrl && window.location.href.startsWith('http')) {
+      currentWebUrl.textContent = window.location.href;
+    }
+  });
+
+  btnCloseModal.addEventListener('click', () => {
+    shortcutModal.classList.add('hidden');
+    shortcutModal.classList.remove('flex');
+  });
+
+  shortcutModal.addEventListener('click', (e) => {
+    if (e.target === shortcutModal) {
+      shortcutModal.classList.add('hidden');
+      shortcutModal.classList.remove('flex');
+    }
+  });
+}
+
 let currentFile = null;
 let currentArrayBuffer = null;
 
