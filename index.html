@@ -273,7 +273,17 @@
       </div>
 
       <!-- Footer Info -->
-      <footer class="mt-12 text-center text-xs text-slate-600 flex flex-col items-center gap-2">
+      <footer class="mt-12 text-center text-xs text-slate-600 flex flex-col items-center gap-3">
+        <!-- Visitor Counter Badge -->
+        <div id="visitorBadge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-slate-400 text-xs shadow-inner">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-slate-400">Total Pengunjung:</span>
+          <span id="visitorCount" class="font-mono font-bold text-cyan-400 tracking-wide">...</span>
+        </div>
+
         <p>Meta Glass EXIF Injector • Pure Client-Side Binary Patching & JPEG APP1 Segment Injection</p>
         <a href="https://github.com/fikimaul/meta-glasses-converter" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-cyan-400 transition inline-flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">

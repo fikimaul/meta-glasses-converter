@@ -449,3 +449,32 @@ btnShareStory.addEventListener('click', async () => {
     btnDownload.click();
   }
 });
+
+// Visitor Counter (CounterAPI)
+async function initVisitorCounter() {
+  const visitorCountEl = document.getElementById('visitorCount');
+  if (!visitorCountEl) return;
+
+  const sessionKey = 'meta_glass_visited_session';
+  const hasVisited = sessionStorage.getItem(sessionKey);
+  const isReadOnly = Boolean(hasVisited);
+
+  const endpoint = `https://counterapi.com/api/fiki.my.id/view/meta-glasses-converter${isReadOnly ? '?readOnly=true' : ''}`;
+
+  try {
+    const res = await fetch(endpoint, { credentials: 'omit', cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (typeof data.value === 'number') {
+      visitorCountEl.textContent = data.value.toLocaleString('id-ID');
+      sessionStorage.setItem(sessionKey, '1');
+    } else {
+      visitorCountEl.textContent = '-';
+    }
+  } catch (err) {
+    console.warn('Visitor counter tidak dapat dimuat:', err);
+    visitorCountEl.textContent = '-';
+  }
+}
+
+initVisitorCounter();
